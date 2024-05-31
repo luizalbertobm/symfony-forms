@@ -9,6 +9,8 @@ use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 use Gedmo\Timestampable\Traits\TimestampableEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\ArticleRepository")
@@ -26,6 +28,8 @@ class Article
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank(message="Get creative and think of a title!")
+     * @Assert\Length(min=10, minMessage="I know it's hard, but the title must be at least {{ limit }} characters")
      */
     private $title;
 
@@ -250,5 +254,18 @@ class Article
     public function isPublished():bool
     {
         return $this->publishedAt !== null;
+    }
+
+    /**
+     * @Assert\Callback
+     */
+    public function validate(ExecutionContextInterface $context, $payload)
+    {
+        if(stripos($this->getTitle(),'the borg') !== false) {
+            $context->buildViolation('Um.. the Borg will be in touch')
+                ->atPath('title')
+                ->addViolation();
+        }
+
     }
 }
